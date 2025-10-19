@@ -106,11 +106,22 @@ Thumbs.db
 *.temp
 *.log
 
-# Development and testing files
-test_*.py
-*_test.py
+# Development and testing files (keep essential ones)
 performance_test_results.csv
 rust_vs_python_performance_demo.csv
+test_advanced_analytics.py
+test_algorithm_selection.py
+test_complete_dashboard.py
+test_complete_performance.py
+test_dashboard_components.py
+test_dashboard_validation.py
+test_enhanced_features.py
+test_error_handling.py
+test_model_playground_final.py
+test_optimized_features.py
+test_real_data_validation.py
+test_rust_vs_python_performance.py
+test_true_performance.py
 
 # Documentation drafts and development notes
 ADVANCED_ANALYTICS_FIXED.md
@@ -127,6 +138,7 @@ REAL_DATA_FIX_COMPLETE.md
 RUST_SETUP_GUIDE.md
 TRUE_PERFORMANCE_COMPLETE.md
 VISUAL_STUDIO_SETUP.md
+PROJECT_READY_FOR_GITHUB.md
 
 # Build scripts (keep main ones, ignore variants)
 compile_rust_fixed.bat
