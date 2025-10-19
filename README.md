@@ -393,13 +393,6 @@ kmeans = RustKMeans(
 - **Rayon** for parallel processing capabilities
 - **Scikit-learn** for API inspiration and benchmarking reference
 
-## 🔗 Links
-
-- **Repository**: [https://github.com/your-username/pyrust-ml](https://github.com/your-username/pyrust-ml)
-- **Documentation**: [https://pyrust-ml.readthedocs.io](https://pyrust-ml.readthedocs.io)
-- **PyPI Package**: [https://pypi.org/project/pyrust-ml](https://pypi.org/project/pyrust-ml)
-- **Issues**: [https://github.com/your-username/pyrust-ml/issues](https://github.com/your-username/pyrust-ml/issues)
-
 ---
 
 **Built using Rust 🦀 and Python 🐍**
