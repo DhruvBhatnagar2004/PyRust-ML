@@ -1,0 +1,157 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# Rust
+/target/
+/rust_src/target/
+Cargo.lock
+**/*.rs.bk
+
+# Compiled Rust extensions
+*.pyd
+*.dll
+*.so
+*.dylib
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+*.lnk
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Development and testing files
+test_*.py
+*_test.py
+performance_test_results.csv
+rust_vs_python_performance_demo.csv
+
+# Documentation drafts and development notes
+ADVANCED_ANALYTICS_FIXED.md
+COMPLETE_SETUP_GUIDE.md
+CREATIVE_CARDS_ENHANCEMENT.md
+DASHBOARD_UI_FIXES.md
+ENHANCED_FEATURES_SUMMARY.md
+ISSUES_RESOLVED.md
+PROFESSIONAL_DASHBOARD_COMPLETE.md
+PROFESSIONAL_DASHBOARD_GUIDE.md
+PROJECT_COMPLETE.md
+PROJECT_TRANSFORMATION_COMPLETE.md
+REAL_DATA_FIX_COMPLETE.md
+RUST_SETUP_GUIDE.md
+TRUE_PERFORMANCE_COMPLETE.md
+VISUAL_STUDIO_SETUP.md
+
+# Build scripts (keep main ones, ignore variants)
+compile_rust_fixed.bat
+compile_rust_py313.bat
+compile_rust_simple.bat
+setup_gpu.bat
+
+# Launch scripts (keep essential ones)
+launch.py
+run_professional_dashboard.bat
+
+# Backup and duplicate source directories
+/src/
+
+# Node.js (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local configuration
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Streamlit
+.streamlit/

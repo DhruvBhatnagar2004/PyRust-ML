@@ -1,0 +1,52 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "pyrustml"
+version = "0.1.0"
+description = "High-Performance Machine Learning Toolkit Using Rust"
+authors = [{name = "PyRust-ML Team"}]
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.20.0",
+    "scikit-learn>=1.0.0",
+    "pandas>=1.3.0",
+    "matplotlib>=3.4.0",
+    "streamlit>=1.28.0",
+    "plotly>=5.0.0",
+    "seaborn>=0.11.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-benchmark>=4.0",
+    "maturin>=1.0",
+    "black>=22.0",
+    "isort>=5.0",
+    "mypy>=0.991",
+]
+
+[project.urls]
+Homepage = "https://github.com/pyrust-ml/pyrust-ml"
+Repository = "https://github.com/pyrust-ml/pyrust-ml"
+Documentation = "https://pyrust-ml.readthedocs.io"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "pyrustml._rust"
