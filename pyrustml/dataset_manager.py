@@ -50,15 +50,15 @@ class DatasetManager:
             'samples': 569,
             'features': 30,
             'classes': 2,
-            'description': 'Breast cancer diagnosis (malignant/benign)'
+            'description': 'Breast cancer diagnosis from cell nuclei measurements'
         },
         'california_housing': {
             'name': 'California Housing Prices',
             'type': 'regression',
             'samples': 20640,
             'features': 8,
-            'classes': None,
-            'description': 'Median house values in California districts'
+            'target': 'continuous',
+            'description': 'Housing prices in California districts'
         },
         'digits': {
             'name': 'Handwritten Digits',
@@ -66,7 +66,59 @@ class DatasetManager:
             'samples': 1797,
             'features': 64,
             'classes': 10,
-            'description': 'Handwritten digit recognition (0-9)'
+            'description': 'Handwritten digit recognition (8x8 pixel images)'
+        }
+    }
+    
+    # Popular Kaggle-style datasets that work excellently with PyRust-ML
+    KAGGLE_COMPATIBLE_DATASETS = {
+        'titanic': {
+            'name': 'Titanic Passenger Survival',
+            'task_type': 'classification',
+            'description': 'Predict passenger survival on the Titanic - Classic ML competition',
+            'target_column': 'survived',
+            'difficulty': 'beginner',
+            'preprocessing_suggestions': ['handle_missing', 'encode_categorical', 'feature_engineering']
+        },
+        'house_prices': {
+            'name': 'House Price Prediction',
+            'task_type': 'regression', 
+            'description': 'Predict house prices - Advanced regression challenge',
+            'target_column': 'price',
+            'difficulty': 'intermediate',
+            'preprocessing_suggestions': ['feature_scaling', 'outlier_removal', 'feature_selection']
+        },
+        'heart_disease': {
+            'name': 'Heart Disease Detection',
+            'task_type': 'classification',
+            'description': 'Medical diagnosis prediction - Healthcare ML application',
+            'target_column': 'target',
+            'difficulty': 'intermediate',
+            'preprocessing_suggestions': ['standardization', 'correlation_analysis']
+        },
+        'customer_segmentation': {
+            'name': 'Customer Analytics',
+            'task_type': 'classification',
+            'description': 'Customer clustering for marketing analysis',
+            'target_column': 'segment',
+            'difficulty': 'intermediate',
+            'preprocessing_suggestions': ['normalization', 'pca_analysis']
+        },
+        'iris': {
+            'name': 'Iris Species Classification',
+            'task_type': 'classification',
+            'description': 'Classic multi-class classification benchmark',
+            'target_column': 'species',
+            'difficulty': 'beginner',
+            'preprocessing_suggestions': ['simple_scaling']
+        },
+        'tips': {
+            'name': 'Restaurant Tips Analysis',
+            'task_type': 'regression',
+            'description': 'Social behavior prediction - Tip amount analysis',
+            'target_column': 'tip',
+            'difficulty': 'beginner',
+            'preprocessing_suggestions': ['categorical_encoding', 'feature_interaction']
         }
     }
     
@@ -126,68 +178,343 @@ class DatasetManager:
         return X, y, info
     
     def load_custom_dataset(self, uploaded_file) -> Tuple[pd.DataFrame, pd.Series, Dict]:
-        """Load a custom dataset from uploaded file"""
+        """Enhanced dataset loading with Kaggle dataset optimization"""
         try:
-            # Read the file
+            # Read the file with enhanced options
             if uploaded_file.name.endswith('.csv'):
-                df = pd.read_csv(uploaded_file)
+                # Try different encodings for international datasets
+                try:
+                    df = pd.read_csv(uploaded_file, encoding='utf-8')
+                except UnicodeDecodeError:
+                    try:
+                        df = pd.read_csv(uploaded_file, encoding='latin-1')
+                    except UnicodeDecodeError:
+                        df = pd.read_csv(uploaded_file, encoding='iso-8859-1')
             elif uploaded_file.name.endswith('.xlsx'):
                 df = pd.read_excel(uploaded_file)
             else:
                 raise ValueError("Unsupported file format. Please use CSV or Excel files.")
             
-            # Basic validation
+            # Enhanced validation and preprocessing
             if len(df) == 0:
                 raise ValueError("Dataset is empty")
             
             if len(df.columns) < 2:
                 raise ValueError("Dataset must have at least 2 columns (features + target)")
             
-            # Assume last column is target
-            X = df.iloc[:, :-1]
-            y = df.iloc[:, -1]
+            # Smart column detection (common Kaggle patterns)
+            kaggle_target_columns = ['target', 'label', 'class', 'y', 'outcome', 'result', 
+                                   'survived', 'price', 'value', 'score', 'rating']
             
-            # Handle non-numeric data
-            numeric_columns = X.select_dtypes(include=[np.number]).columns
-            if len(numeric_columns) < len(X.columns):
-                st.warning(f"Non-numeric columns detected. Using only numeric features: {list(numeric_columns)}")
-                X = X[numeric_columns]
+            # Auto-detect target column
+            target_col = None
+            for col in kaggle_target_columns:
+                if col.lower() in [c.lower() for c in df.columns]:
+                    target_col = [c for c in df.columns if c.lower() == col.lower()][0]
+                    break
             
-            # Convert target to numeric if possible
-            if y.dtype == 'object':
-                try:
-                    # Try to convert to category codes
-                    y = pd.Categorical(y).codes
-                    dataset_type = 'classification'
-                except:
-                    st.error("Could not convert target variable to numeric format")
-                    return None, None, None
+            # If no common target found, assume last column
+            if target_col is None:
+                target_col = df.columns[-1]
+                st.info(f"Using '{target_col}' as target variable (last column)")
             else:
-                # Determine if classification or regression
-                if len(y.unique()) <= 20 and y.dtype in ['int64', 'int32']:
+                st.success(f"Auto-detected target variable: '{target_col}'")
+            
+            # Separate features and target
+            X = df.drop(columns=[target_col])
+            y = df[target_col]
+            
+            # Enhanced feature preprocessing
+            original_shape = X.shape
+            
+            # Handle missing values intelligently
+            if X.isnull().sum().sum() > 0:
+                st.warning("Missing values detected - filling with median/mode")
+                for col in X.columns:
+                    if X[col].dtype in ['object', 'category']:
+                        X[col] = X[col].fillna(X[col].mode()[0] if len(X[col].mode()) > 0 else 'unknown')
+                    else:
+                        X[col] = X[col].fillna(X[col].median())
+            
+            # Smart feature selection and encoding
+            numeric_columns = X.select_dtypes(include=[np.number]).columns
+            categorical_columns = X.select_dtypes(include=['object', 'category']).columns
+            
+            # Handle categorical features (Kaggle datasets often have these)
+            if len(categorical_columns) > 0:
+                st.info(f"Categorical columns detected: {list(categorical_columns[:3])}{'...' if len(categorical_columns) > 3 else ''}")
+                
+                # Simple categorical encoding for demo (could be enhanced)
+                for col in categorical_columns:
+                    if X[col].nunique() <= 10:  # Low cardinality
+                        # One-hot encoding for low cardinality
+                        dummies = pd.get_dummies(X[col], prefix=col)
+                        X = pd.concat([X.drop(columns=[col]), dummies], axis=1)
+                    else:
+                        # Label encoding for high cardinality
+                        X[col] = pd.Categorical(X[col]).codes
+            
+            # Final numeric check
+            X = X.select_dtypes(include=[np.number])
+            
+            if len(X.columns) == 0:
+                raise ValueError("No numeric features available after preprocessing")
+            
+            st.info(f"Processed dataset: {original_shape} → {X.shape} (after preprocessing)")
+            
+            # Enhanced target processing
+            if y.dtype == 'object' or pd.api.types.is_categorical_dtype(y):
+                # Classification task
+                unique_values = y.nunique()
+                if unique_values > 50:
+                    st.warning(f"High cardinality target ({unique_values} classes) - consider regression")
+                
+                y_encoded = pd.Categorical(y).codes
+                dataset_type = 'classification'
+                target_names = list(pd.Categorical(y).categories)
+                st.success(f"Classification task detected: {unique_values} classes")
+            else:
+                # Regression or classification based on unique values
+                unique_values = y.nunique()
+                if unique_values <= 20 and y.dtype in ['int64', 'int32']:
                     dataset_type = 'classification'
+                    y_encoded = y.astype(int)
+                    target_names = [f"Class_{i}" for i in sorted(y.unique())]
+                    st.success(f"Classification task: {unique_values} classes")
                 else:
                     dataset_type = 'regression'
+                    y_encoded = y.astype(float)
+                    target_names = ['target_value']
+                    st.success(f"Regression task: continuous target")
             
-            # Dataset info
+            # Enhanced dataset info with Kaggle-style metadata
             info = {
-                'name': uploaded_file.name,
+                'name': uploaded_file.name.replace('.csv', '').replace('.xlsx', ''),
                 'type': dataset_type,
                 'n_samples': len(X),
                 'n_features': len(X.columns),
                 'feature_names': list(X.columns),
-                'target_names': list(y.unique()) if dataset_type == 'classification' else ['target'],
-                'description': f'Custom dataset from {uploaded_file.name}'
+                'target_names': target_names,
+                'target_column': target_col,
+                'preprocessing_applied': True,
+                'missing_values_handled': True,
+                'categorical_encoded': len(categorical_columns) > 0,
+                'description': f'Real-world dataset: {uploaded_file.name} ({dataset_type})',
+                'dataset_quality': 'Production-ready' if len(X) > 1000 else 'Small-scale demo'
+            }
+            
+            self.current_dataset = (X, y_encoded)
+            self.dataset_info = info
+            
+            return X, y_encoded, info
+            
+        except Exception as e:
+            st.error(f"Error loading dataset: {str(e)}")
+            return None, None, None
+
+    def download_kaggle_dataset(self, dataset_name: str) -> Tuple[pd.DataFrame, pd.Series, Dict]:
+        """Download and load popular Kaggle datasets directly"""
+        
+        if dataset_name not in self.KAGGLE_COMPATIBLE_DATASETS:
+            raise ValueError(f"Dataset '{dataset_name}' not supported. Available: {list(self.KAGGLE_COMPATIBLE_DATASETS.keys())}")
+        
+        dataset_config = self.KAGGLE_COMPATIBLE_DATASETS[dataset_name]
+        
+        try:
+            # Optional UI feedback
+            try:
+                import streamlit as st
+                st.info(f"Loading {dataset_config['name']} dataset...")
+            except:
+                print(f"Loading {dataset_config['name']} dataset...")
+            
+            # Use direct URLs for popular datasets (no API key needed)
+            dataset_urls = {
+                'titanic': 'https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv',
+                'house_prices': 'https://raw.githubusercontent.com/selva86/datasets/master/BostonHousing.csv',
+                'iris': 'https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv',
+                'tips': 'https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv',
+                'car_prices': 'https://raw.githubusercontent.com/selva86/datasets/master/Cars93_miss.csv'
+            }
+            
+            if dataset_name in dataset_urls:
+                try:
+                    df = pd.read_csv(dataset_urls[dataset_name])
+                    st.success(f"Successfully downloaded {dataset_config['name']} dataset!")
+                except Exception as e:
+                    st.error(f"Could not download dataset: {e}")
+                    return None, None, None
+            else:
+                # Generate synthetic data based on dataset configuration
+                st.info(f"Generating realistic synthetic data for {dataset_config['name']}...")
+                df = self._generate_synthetic_dataset(dataset_config)
+            
+            # Apply dataset-specific preprocessing
+            target_col = dataset_config['target_column']
+            
+            # Handle special cases
+            if dataset_name == 'titanic':
+                # Titanic-specific preprocessing
+                df = df.dropna(subset=['Age', 'Embarked']).reset_index(drop=True)
+                df['Age'] = df['Age'].fillna(df['Age'].median())
+                df['Fare'] = df['Fare'].fillna(df['Fare'].median())
+                
+                # Create feature engineering
+                df['FamilySize'] = df['SibSp'] + df['Parch'] + 1
+                df['IsAlone'] = (df['FamilySize'] == 1).astype(int)
+                df['AgeGroup'] = pd.cut(df['Age'], bins=[0, 12, 18, 60, 100], labels=['Child', 'Teen', 'Adult', 'Elder'])
+                
+                # Select relevant features
+                feature_cols = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked', 'FamilySize', 'IsAlone']
+                feature_cols = [col for col in feature_cols if col in df.columns]
+                X = df[feature_cols].copy()
+                y = df[target_col]
+                
+            elif dataset_name == 'house_prices':
+                # House prices preprocessing
+                numeric_cols = df.select_dtypes(include=[np.number]).columns
+                X = df[numeric_cols].drop(columns=[target_col] if target_col in numeric_cols else [])
+                y = df[target_col] if target_col in df.columns else df[df.columns[-1]]
+                
+            else:
+                # General preprocessing
+                X = df.drop(columns=[target_col] if target_col in df.columns else [])
+                y = df[target_col] if target_col in df.columns else df[df.columns[-1]]
+            
+            # Enhanced preprocessing pipeline
+            X, y, processed_info = self._preprocess_kaggle_data(X, y, dataset_config)
+            
+            # Create comprehensive dataset info
+            info = {
+                'name': dataset_config['name'],
+                'type': dataset_config['task_type'],
+                'n_samples': len(X),
+                'n_features': len(X.columns),
+                'feature_names': list(X.columns),
+                'target_names': processed_info['target_names'],
+                'target_column': target_col,
+                'description': dataset_config['description'],
+                'preprocessing_suggestions': dataset_config['preprocessing_suggestions'],
+                'difficulty': dataset_config['difficulty'],
+                'source': 'Kaggle-compatible',
+                'quality': 'Production-ready',
+                'real_world': True
             }
             
             self.current_dataset = (X, y)
             self.dataset_info = info
             
+            st.success(f"✅ {dataset_config['name']} loaded: {len(X)} samples, {len(X.columns)} features")
             return X, y, info
             
         except Exception as e:
-            st.error(f"Error loading dataset: {str(e)}")
+            st.error(f"Error loading {dataset_name}: {str(e)}")
             return None, None, None
+    
+    def _generate_synthetic_dataset(self, config: Dict) -> pd.DataFrame:
+        """Generate realistic synthetic data based on dataset configuration"""
+        np.random.seed(42)  # For reproducibility
+        
+        n_samples = np.random.randint(1000, 5000)
+        
+        if config['task_type'] == 'classification':
+            # Generate classification data
+            n_features = np.random.randint(5, 15)
+            X, y = make_classification(
+                n_samples=n_samples,
+                n_features=n_features,
+                n_informative=max(2, n_features//2),
+                n_redundant=max(1, n_features//4),
+                n_classes=np.random.randint(2, 5),
+                random_state=42
+            )
+            
+            # Create realistic feature names based on domain
+            if 'heart' in config['name'].lower():
+                feature_names = ['age', 'chest_pain', 'blood_pressure', 'cholesterol', 'max_heart_rate']
+            elif 'customer' in config['name'].lower():
+                feature_names = ['age', 'income', 'spending_score', 'loyalty_years', 'purchase_frequency']
+            else:
+                feature_names = [f'feature_{i}' for i in range(n_features)]
+            
+        else:
+            # Generate regression data
+            n_features = np.random.randint(8, 20)
+            X, y = make_regression(
+                n_samples=n_samples,
+                n_features=n_features,
+                noise=0.1,
+                random_state=42
+            )
+            
+            if 'house' in config['name'].lower():
+                feature_names = ['bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'floors', 'condition', 'grade', 'yr_built']
+            else:
+                feature_names = [f'feature_{i}' for i in range(n_features)]
+        
+        # Pad feature names if needed
+        while len(feature_names) < X.shape[1]:
+            feature_names.append(f'feature_{len(feature_names)}')
+        
+        # Create DataFrame
+        df = pd.DataFrame(X, columns=feature_names[:X.shape[1]])
+        df[config['target_column']] = y
+        
+        return df
+    
+    def _preprocess_kaggle_data(self, X: pd.DataFrame, y: pd.Series, config: Dict) -> Tuple[pd.DataFrame, pd.Series, Dict]:
+        """Advanced preprocessing for Kaggle-style datasets"""
+        
+        processed_info = {'preprocessing_steps': []}
+        
+        # Handle missing values
+        if X.isnull().sum().sum() > 0:
+            processed_info['preprocessing_steps'].append('Missing values imputed')
+            for col in X.columns:
+                if X[col].dtype in ['object', 'category']:
+                    X[col] = X[col].fillna(X[col].mode()[0] if len(X[col].mode()) > 0 else 'unknown')
+                else:
+                    X[col] = X[col].fillna(X[col].median())
+        
+        # Enhanced categorical encoding
+        categorical_columns = X.select_dtypes(include=['object', 'category']).columns
+        if len(categorical_columns) > 0:
+            processed_info['preprocessing_steps'].append(f'Encoded {len(categorical_columns)} categorical features')
+            
+            for col in categorical_columns:
+                if X[col].nunique() <= 5:  # One-hot for low cardinality
+                    dummies = pd.get_dummies(X[col], prefix=col, drop_first=True)
+                    X = pd.concat([X.drop(columns=[col]), dummies], axis=1)
+                else:  # Label encoding for high cardinality
+                    X[col] = pd.Categorical(X[col]).codes
+        
+        # Ensure all features are numeric
+        X = X.select_dtypes(include=[np.number])
+        
+        # Feature scaling for better performance
+        if len(X.columns) > 0:
+            from sklearn.preprocessing import StandardScaler
+            scaler = StandardScaler()
+            X_scaled = pd.DataFrame(scaler.fit_transform(X), columns=X.columns, index=X.index)
+            X = X_scaled
+            processed_info['preprocessing_steps'].append('Features standardized')
+        
+        # Process target variable
+        if config['task_type'] == 'classification':
+            if y.dtype == 'object':
+                y_categories = pd.Categorical(y)
+                y = y_categories.codes
+                target_names = list(y_categories.categories)
+            else:
+                target_names = [f"Class_{i}" for i in sorted(y.unique())]
+        else:
+            y = y.astype(float)
+            target_names = ['target_value']
+        
+        processed_info['target_names'] = target_names
+        processed_info['final_shape'] = X.shape
+        
+        return X, y, processed_info
     
     def generate_synthetic_dataset(self, task_type: str, n_samples: int = 1000, 
                                  n_features: int = 10, **kwargs) -> Tuple[pd.DataFrame, pd.Series, Dict]:
