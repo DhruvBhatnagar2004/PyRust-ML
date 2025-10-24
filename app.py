@@ -42,9 +42,14 @@ def main():
             from pyrustml import RustLinearRegression
             lr = RustLinearRegression()
             rust_status = hasattr(lr, '_using_rust') and lr._using_rust
-            st.write(f"Rust: {'✅ Active' if rust_status else '⚠️ Fallback'}")
+            if rust_status:
+                st.write(f"Rust: ✅ Active")
+            else:
+                st.write(f"Rust: 🐍 Python Mode")
+                st.caption("*Cloud deployment uses Python implementations for compatibility*")
         except Exception as e:
-            st.write(f"Rust: ❌ Error - {str(e)[:30]}...")
+            st.write(f"Rust: ❌ Error")
+            st.caption("*Using Python fallbacks*")
     
     try:
         # Import and run the professional dashboard

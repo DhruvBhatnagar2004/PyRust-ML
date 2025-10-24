@@ -1010,14 +1010,14 @@ def render_dashboard_header():
                                 font-size: 0.9rem;
                                 font-weight: 600;
                                 color: white;
-                            ">{'Enabled' if rust_status else 'Fallback'}</div>
+                            ">{'Enabled' if rust_status else 'Python Mode'}</div>
                         </div>
                         <div style="
                             font-family: 'JetBrains Mono', monospace;
                             font-size: 0.8rem;
                             font-weight: 700;
                             color: #00f5ff;
-                        ">{'5-55x' if rust_status else '1x'}</div>
+                        ">{'5-55x' if rust_status else 'Pure Python'}</div>
                     </div>
                     
                     <div style="
@@ -1980,8 +1980,8 @@ def render_enhanced_analytics_tab():
             pred = lr.predict([[3.0]])
             
             rust_working = hasattr(lr, '_using_rust') and lr._using_rust and pred is not None
-            rust_status = "Active" if rust_working else "Fallback"
-            st.metric("🦀 Rust Status", rust_status, "100%" if rust_working else "0%")
+            rust_status = "Rust Active" if rust_working else "Python Mode"
+            st.metric("🦀 Rust Status", rust_status, "Optimized" if rust_working else "Standard")
         except Exception:
             st.metric("🦀 Rust Status", "Unknown", "0%")
     
