@@ -1,7 +1,7 @@
 """
 PyRust-ML: Professional ML Toolkit Entry Point
 Optimized for both local and cloud deployment with intelligent fallback
-Version: 1.1 - Production Ready
+Version: 2.0 - Cloud Production Ready - October 2025
 """
 
 import streamlit as st

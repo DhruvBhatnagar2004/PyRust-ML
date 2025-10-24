@@ -2106,49 +2106,56 @@ def render_enhanced_analytics_tab():
         
         with col1:
             # CPU Usage over time
-            cpu_data = [psutil.cpu_percent(interval=0.1) for _ in range(10)]
-            
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=list(range(len(cpu_data))),
-                y=cpu_data,
-                mode='lines+markers',
-                name='CPU Usage',
-                line=dict(color='rgba(16, 185, 129, 0.8)')
-            ))
-            
-            fig.update_layout(
-                title="CPU Usage Trend",
-                xaxis_title="Time (samples)",
-                yaxis_title="CPU Usage (%)",
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='white')
-            )
-            
-            st.plotly_chart(fig, width="stretch")
+            try:
+                cpu_data = [float(psutil.cpu_percent(interval=0.1)) for _ in range(10)]
+                data_points = len(cpu_data)
+                
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=list(range(int(data_points))),
+                    y=cpu_data,
+                    mode='lines+markers',
+                    name='CPU Usage',
+                    line=dict(color='rgba(16, 185, 129, 0.8)')
+                ))
+                
+                fig.update_layout(
+                    title="CPU Usage Trend",
+                    xaxis_title="Time (samples)",
+                    yaxis_title="CPU Usage (%)",
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color='white')
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
+            except Exception as e:
+                st.error(f"CPU monitoring error: {str(e)}")
         
         with col2:
-            # Memory Usage
-            memory = psutil.virtual_memory()
-            
-            fig = go.Figure(data=[
-                go.Pie(
-                    labels=['Used', 'Available'],
-                    values=[memory.used, memory.available],
-                    hole=0.6,
-                    marker_colors=['rgba(239, 68, 68, 0.8)', 'rgba(16, 185, 129, 0.8)']
+            try:
+                # Memory Usage
+                memory = psutil.virtual_memory()
+                
+                fig = go.Figure(data=[
+                    go.Pie(
+                        labels=['Used', 'Available'],
+                        values=[int(memory.used), int(memory.available)],
+                        hole=0.6,
+                        marker_colors=['rgba(239, 68, 68, 0.8)', 'rgba(16, 185, 129, 0.8)']
+                    )
+                ])
+                
+                fig.update_layout(
+                    title="Memory Usage Distribution",
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color='white')
                 )
-            ])
-            
-            fig.update_layout(
-                title="Memory Usage Distribution",
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='white')
-            )
-            
-            st.plotly_chart(fig, width="stretch")
+                
+                st.plotly_chart(fig, use_container_width=True)
+            except Exception as e:
+                st.error(f"Memory monitoring error: {str(e)}")
     
     elif analytics_type == "Speedup Analysis":
         st.markdown("#### 🚀 Rust vs Python Speedup Analysis")
