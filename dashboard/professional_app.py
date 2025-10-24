@@ -1418,7 +1418,7 @@ def render_enhanced_dataset_tab():
             paper_bgcolor='rgba(0,0,0,0)',
             font=dict(family='Inter')
         )
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
         
         # Dataset statistics
         col_a, col_b, col_c = st.columns(3)
@@ -1820,7 +1820,7 @@ def render_enhanced_benchmarking_tab():
                     )
                 )
                 
-                st.plotly_chart(fig, width="stretch")
+                st.plotly_chart(fig, use_container_width=True)
                 
                 # Calculate real performance metrics
                 last_results = all_results[-1][1]  # Get the largest dataset results
@@ -1858,7 +1858,7 @@ def render_enhanced_benchmarking_tab():
                 if unexpected_in_table:
                     st.error(f"❌ **Data integrity error**: Table contains unexpected algorithms: {unexpected_in_table}")
                 else:
-                    st.dataframe(final_results.round(4), width="stretch")
+                    st.dataframe(final_results.round(4), use_container_width=True)
                 
             except Exception as e:
                 st.error(f"❌ **Benchmark Failed**: {str(e)}")
@@ -2071,7 +2071,7 @@ def render_enhanced_analytics_tab():
             
             # Display results
             df = pd.DataFrame(algorithms)
-            st.dataframe(df, width="stretch")
+            st.dataframe(df, use_container_width=True)
             
             # Performance visualization
             fig = go.Figure()
@@ -2092,7 +2092,7 @@ def render_enhanced_analytics_tab():
                 font=dict(color='white')
             )
             
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, use_container_width=True)
             
         except Exception as e:
             st.error(f"Failed to generate real-time analytics: {e}")
@@ -2235,12 +2235,12 @@ def render_enhanced_analytics_tab():
             yaxis=dict(type='log')
         )
         
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
         
         # Speedup summary table
         summary = df_speedup.groupby('Algorithm')['Speedup'].agg(['mean', 'max', 'min']).round(2)
         st.markdown("##### 📊 Speedup Summary")
-        st.dataframe(summary, width="stretch")
+        st.dataframe(summary, use_container_width=True)
     
     elif analytics_type == "Memory Optimization":
         st.markdown("#### 💾 Memory Usage Optimization")
@@ -2300,7 +2300,7 @@ def render_enhanced_analytics_tab():
                 font=dict(color='white')
             )
             
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             fig = go.Figure(data=[
@@ -2316,7 +2316,7 @@ def render_enhanced_analytics_tab():
                 font=dict(color='white')
             )
             
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, use_container_width=True)
     
     # Performance Tips
     st.markdown("---")
@@ -2452,7 +2452,7 @@ def render_gpu_acceleration_tab():
                 font=dict(family='Inter')
             )
             
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             st.markdown("#### 🏆 Speedup Results")
@@ -2565,7 +2565,7 @@ def render_gpu_acceleration_tab():
             height=300
         )
         
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
