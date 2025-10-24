@@ -1,5 +1,6 @@
 # PyRust-ML: Cloud Deployment Requirements
 # Optimized for Streamlit Community Cloud
+# Force rebuild: 2024-12-19 18:45:00
 
 # Core Web Framework
 streamlit>=1.28.0

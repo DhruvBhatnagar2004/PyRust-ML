@@ -816,11 +816,27 @@ def inject_custom_css():
 
 def render_dashboard_header():
     """Render immersive professional dashboard header with advanced visual effects"""
-    # Get system status
+    # Get system status - Smart Rust detection for cloud environments
     try:
         from pyrustml.linear_regression import RustLinearRegression
-        rust_status = RustLinearRegression()._using_rust
-    except:
+        test_lr = RustLinearRegression()
+        
+        # Test with actual data to verify Rust is working
+        import numpy as np
+        X = np.array([[1.0], [2.0], [3.0]])
+        y = np.array([1.0, 2.0, 3.0])
+        test_lr.fit(X, y)
+        
+        # Additional check for Rust attribute
+        rust_working = hasattr(test_lr, '_using_rust') and test_lr._using_rust
+        
+        # Final verification - make a prediction
+        pred = test_lr.predict([[4.0]])
+        
+        rust_status = rust_working and pred is not None
+        
+    except Exception as e:
+        print(f"Rust check failed: {str(e)}")  # Debug info for cloud
         rust_status = False
     
     gpu_status = GPU_FEATURES_AVAILABLE and GPU_AVAILABLE
@@ -1952,8 +1968,17 @@ def render_enhanced_analytics_tab():
         try:
             from pyrustml import RustLinearRegression
             lr = RustLinearRegression()
-            rust_status = "Active" if hasattr(lr, '_using_rust') and lr._using_rust else "Fallback"
-            st.metric("🦀 Rust Status", rust_status, "100%" if (hasattr(lr, '_using_rust') and lr._using_rust) else "0%")
+            
+            # Test Rust with actual computation
+            import numpy as np
+            X = np.array([[1.0], [2.0]])
+            y = np.array([1.0, 2.0])
+            lr.fit(X, y)
+            pred = lr.predict([[3.0]])
+            
+            rust_working = hasattr(lr, '_using_rust') and lr._using_rust and pred is not None
+            rust_status = "Active" if rust_working else "Fallback"
+            st.metric("🦀 Rust Status", rust_status, "100%" if rust_working else "0%")
         except Exception:
             st.metric("🦀 Rust Status", "Unknown", "0%")
     
