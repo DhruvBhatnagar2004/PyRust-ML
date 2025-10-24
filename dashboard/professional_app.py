@@ -837,6 +837,9 @@ def render_dashboard_header():
         
     except Exception as e:
         print(f"Rust check failed: {str(e)}")  # Debug info for cloud
+        # Special message for cloud deployment
+        if any(['streamlit' in str(e).lower(), 'cargo' in str(e).lower(), 'rust' in str(e).lower()]):
+            print("Cloud deployment detected - Rust compilation not available in cloud environment")
         rust_status = False
     
     gpu_status = GPU_FEATURES_AVAILABLE and GPU_AVAILABLE
